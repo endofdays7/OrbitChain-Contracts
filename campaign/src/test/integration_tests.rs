@@ -63,7 +63,7 @@ fn test_initialize_happy_path() {
             assets.clone(),
             milestones.clone(),
             0,
-        );
+        None, None);
 
         assert!(result.is_ok(), "Initialize should succeed");
 
@@ -93,7 +93,7 @@ fn test_extend_deadline_happy_path() {
         let end_time = env.ledger().timestamp() + 86_400;
         let new_end_time = env.ledger().timestamp() + (2 * 86_400);
 
-        CampaignContract::initialize(env.clone(), creator, 1000, end_time, assets, milestones, 0)
+        CampaignContract::initialize(env.clone(), creator, 1000, end_time, assets, milestones, 0, None, None)
             .unwrap();
 
         CampaignContract::extend_deadline(env.clone(), new_end_time);
@@ -124,7 +124,7 @@ fn test_donate_happy_path() {
             assets.clone(),
             milestones.clone(),
             0,
-        )
+        None, None)
         .unwrap();
 
         // First donation
@@ -200,7 +200,7 @@ fn test_lifecycle_end_and_refund_eligibility() {
             assets.clone(),
             milestones.clone(),
             0,
-        )
+        None, None)
         .unwrap();
 
         // Donate
@@ -271,7 +271,7 @@ fn test_lifecycle_multi_milestone_unlock() {
             assets.clone(),
             milestones.clone(),
             0,
-        )
+        None, None)
         .unwrap();
 
         // Use different donor addresses to avoid auth-frame conflicts in tests
@@ -408,7 +408,7 @@ fn test_campaign_analytics_report_and_summary() {
             assets.clone(),
             milestones.clone(),
             0,
-        )
+        None, None)
         .unwrap();
 
         let initial = CampaignContract::get_campaign_report(env.clone()).unwrap();
@@ -487,7 +487,7 @@ fn test_donate_below_minimum_panics_assert() {
             assets.clone(),
             milestones.clone(),
             100, // min donation is 100
-        )
+        None, None)
         .unwrap();
 
         let donor = Address::generate(&env);
