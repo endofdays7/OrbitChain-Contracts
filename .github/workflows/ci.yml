@@ -72,7 +72,7 @@ jobs:
       - name: cargo clippy (contracts)
         # Scope is intentionally narrower than the workspace because
         # crates/tools is a native CLI with separate lint conventions.
-        run: cargo clippy ${{ env.CONTRACTS }} -- -D warnings
+        run: cargo clippy ${{ env.CONTRACTS }} --all-targets -- -D warnings
 
   test:
     # Multi-OS matrix (issue #123): host-target tests are the one place OS

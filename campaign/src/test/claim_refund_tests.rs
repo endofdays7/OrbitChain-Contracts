@@ -5,11 +5,9 @@
 
 #![cfg(test)]
 
-use core::ops::Add;
-
 use soroban_sdk::testutils::{Address as AddressTestUtils, Ledger};
 use soroban_sdk::token::{StellarAssetClient, TokenClient};
-use soroban_sdk::{log, vec, Address, Env, Vec};
+use soroban_sdk::{vec, Address, Env, Vec};
 
 use super::with_contract;
 use crate::storage::{set_campaign, set_donor, set_milestone};
@@ -464,12 +462,12 @@ fn create_test_milestone_data(
     vec![&env, milestone]
 }
 
-fn token_asset<'a>(env: &Env) -> (StellarAssetClient<'a>, Address, TokenClient) {
-    let admin = Address::generate(&env);
+fn token_asset<'a>(env: &Env) -> (StellarAssetClient<'a>, Address, TokenClient<'_>) {
+    let admin = Address::generate(env);
     let sac = env.register_stellar_asset_contract_v2(admin.clone());
     let token_address = sac.address();
-    let token = TokenClient::new(&env, &token_address);
-    let token_sac = StellarAssetClient::new(&env, &token_address);
+    let token = TokenClient::new(env, &token_address);
+    let token_sac = StellarAssetClient::new(env, &token_address);
 
     (token_sac, token_address, token)
 }
@@ -533,7 +531,7 @@ fn test_claim_refund_ended_donor_100() {
     let donor2_balance = token.balance(&donor2);
     assert_eq!(donor2_balance, 1099);
 
-    let contract_balance = token.balance(&contract_address);
+    let contract_balance = token.balance(contract_address);
     assert_eq!(contract_balance, 0);
 }
 
@@ -590,7 +588,7 @@ fn test_claim_refund_ended_donor_1() {
     let donor2_balance = token.balance(&donor2);
     assert_eq!(donor2_balance, 990001);
 
-    let contract_balance = token.balance(&contract_address);
+    let contract_balance = token.balance(contract_address);
     assert_eq!(contract_balance, 0);
 }
 
@@ -642,6 +640,6 @@ fn test_claim_refund_ended_full_refund() {
     let donor_balance = token.balance(&donor);
     assert_eq!(donor_balance, 9000);
 
-    let contract_balance = token.balance(&contract_address);
+    let contract_balance = token.balance(contract_address);
     assert_eq!(contract_balance, 0);
 }
