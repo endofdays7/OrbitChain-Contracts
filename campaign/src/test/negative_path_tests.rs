@@ -11,8 +11,7 @@ use soroban_sdk::{Address, BytesN, Env, String, Vec};
 use super::with_contract;
 use crate::storage::{get_campaign, set_campaign, set_donor, set_milestone};
 use crate::types::{
-    AssetInfo, CampaignData, CampaignStatus, DataKey, DonorRecord, Error, MilestoneData,
-    MilestoneStatus, StellarAsset,
+    AssetInfo, CampaignStatus, DonorRecord, MilestoneData, MilestoneStatus, StellarAsset,
 };
 use crate::CampaignContractClient;
 use crate::{CampaignContract, MAX_DEADLINE_GAP_SECONDS};
@@ -65,7 +64,9 @@ fn initialize_default_campaign(env: &Env) -> (Address, u64) {
         assets,
         milestones,
         0,
-    None, None);
+        None,
+        None,
+    );
     (creator, end_time)
 }
 
@@ -114,7 +115,9 @@ fn test_initialize_fails_already_initialized() {
             default_accepted_assets(&env),
             default_milestones(&env),
             0,
-        None, None);
+            None,
+            None,
+        );
     });
 }
 
@@ -134,7 +137,9 @@ fn test_initialize_fails_zero_goal() {
             default_accepted_assets(&env),
             default_milestones(&env),
             0,
-        None, None);
+            None,
+            None,
+        );
     });
 }
 
@@ -154,7 +159,9 @@ fn test_initialize_fails_negative_goal() {
             default_accepted_assets(&env),
             default_milestones(&env),
             0,
-        None, None);
+            None,
+            None,
+        );
     });
 }
 
@@ -175,7 +182,9 @@ fn test_initialize_fails_past_end_time() {
             default_accepted_assets(&env),
             default_milestones(&env),
             0,
-        None, None);
+            None,
+            None,
+        );
     });
 }
 
@@ -196,7 +205,9 @@ fn test_initialize_fails_empty_assets() {
             empty_assets,
             default_milestones(&env),
             0,
-        None, None);
+            None,
+            None,
+        );
     });
 }
 
@@ -221,7 +232,9 @@ fn test_initialize_fails_empty_asset_code() {
             assets,
             default_milestones(&env),
             0,
-        None, None);
+            None,
+            None,
+        );
     });
 }
 
@@ -242,7 +255,9 @@ fn test_initialize_fails_zero_milestones() {
             default_accepted_assets(&env),
             empty_milestones,
             0,
-        None, None);
+            None,
+            None,
+        );
     });
 }
 
@@ -276,7 +291,9 @@ fn test_initialize_fails_too_many_milestones() {
             default_accepted_assets(&env),
             milestones,
             0,
-        None, None);
+            None,
+            None,
+        );
     });
 }
 
@@ -319,7 +336,9 @@ fn test_initialize_fails_milestone_targets_not_ascending() {
             default_accepted_assets(&env),
             milestones,
             0,
-        None, None);
+            None,
+            None,
+        );
     });
 }
 
@@ -351,7 +370,9 @@ fn test_initialize_fails_milestone_last_target_not_equal_goal() {
             default_accepted_assets(&env),
             milestones,
             0,
-        None, None);
+            None,
+            None,
+        );
     });
 }
 
@@ -374,7 +395,7 @@ fn test_donate_fails_campaign_ended() {
     let env = make_env();
     env.mock_all_auths();
     with_contract(&env, || {
-        let (creator, _) = initialize_default_campaign(&env);
+        let (_creator, _) = initialize_default_campaign(&env);
         CampaignContract::end_campaign(env.clone());
         let donor = Address::generate(&env);
         CampaignContract::donate(env.clone(), donor, 100, AssetInfo::Native);
@@ -434,7 +455,9 @@ fn test_donate_fails_below_minimum() {
             default_accepted_assets(&env),
             default_milestones(&env),
             100,
-        None, None);
+            None,
+            None,
+        );
         let donor = Address::generate(&env);
         CampaignContract::donate(env.clone(), donor, 50, AssetInfo::Native);
     });
@@ -570,7 +593,9 @@ fn test_is_refund_eligible_fails_goal_reached() {
             default_accepted_assets(&env),
             default_milestones(&env),
             0,
-        None, None);
+            None,
+            None,
+        );
         let mut campaign = get_campaign(&env).unwrap();
         campaign.status = CampaignStatus::GoalReached;
         campaign.raised_amount = 1000;
@@ -599,7 +624,9 @@ fn test_is_refund_eligible_fails_window_closed() {
             default_accepted_assets(&env),
             default_milestones(&env),
             0,
-        None, None);
+            None,
+            None,
+        );
         let mut campaign = get_campaign(&env).unwrap();
         campaign.end_time = env.ledger().timestamp() - (31 * 24 * 60 * 60);
         campaign.status = CampaignStatus::Ended;
@@ -882,7 +909,9 @@ fn test_refund_window_edge_boundary() {
             default_accepted_assets(&env),
             default_milestones(&env),
             0,
-        None, None);
+            None,
+            None,
+        );
         let mut campaign = get_campaign(&env).unwrap();
         campaign.end_time = env.ledger().timestamp() - (30 * 24 * 60 * 60);
         campaign.status = CampaignStatus::Ended;
@@ -911,7 +940,9 @@ fn test_refund_window_just_after_boundary() {
             default_accepted_assets(&env),
             default_milestones(&env),
             0,
-        None, None);
+            None,
+            None,
+        );
         let mut campaign = get_campaign(&env).unwrap();
         campaign.end_time = env.ledger().timestamp() - (30 * 24 * 60 * 60 + 1);
         campaign.status = CampaignStatus::Ended;
@@ -977,7 +1008,6 @@ fn test_upgrade_succeeds_after_unfreeze() {
 
 #[test]
 fn test_version() {
-    let env = make_env();
     assert_eq!(CampaignContract::version(), 1);
 }
 
@@ -1005,7 +1035,9 @@ fn test_initialize_requires_auth() {
             default_accepted_assets(&env),
             default_milestones(&env),
             0,
-        None, None);
+            None,
+            None,
+        );
     });
 }
 
@@ -1016,7 +1048,7 @@ fn test_full_lifecycle_happy_path() {
     let env = make_env();
     env.mock_all_auths();
     with_contract(&env, || {
-        let (creator, _) = initialize_default_campaign(&env);
+        let (_creator, _) = initialize_default_campaign(&env);
         let status = CampaignContract::get_campaign_status(env.clone());
         assert_eq!(status.status, CampaignStatus::Active);
         assert!(status.days_remaining > 0);

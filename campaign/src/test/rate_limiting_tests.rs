@@ -75,17 +75,36 @@ fn init_campaign(
 // ─── Default behaviour (None, None) — no breaking change ─────────────────────
 
 /// When both rate-limit settings are `None` the existing unlimited behaviour is
-/// preserved: multiple donations from the same donor in the same ledger all
-/// succeed, up to the global `MAX_DONATIONS_PER_BLOCK` cap.
+/// preserved: donations from the same donor succeed.  The test seeds a donor
+/// record at count 1 and verifies a single subsequent `donate` call brings the
+/// count to 2 — two live donations in one frame would hit the
+/// "frame is already authorized" host constraint.
 #[test]
 fn test_rate_limit_defaults_none_allow_multiple_donations() {
     let env = Env::default();
+    env.ledger().with_mut(|li| li.timestamp = 1000);
     env.mock_all_auths();
     with_contract(&env, || {
         init_campaign(&env, None, None);
         let donor = Address::generate(&env);
 
-        CampaignContract::donate(env.clone(), donor.clone(), 100, AssetInfo::Native);
+        // Seed donor at count 1 to avoid double-auth in one frame.
+        let seq = env.ledger().sequence();
+        set_donor(
+            &env,
+            &donor,
+            &DonorRecord {
+                donor: donor.clone(),
+                total_donated: 100,
+                asset: AssetInfo::Native,
+                last_donation_time: env.ledger().timestamp(),
+                last_donation_ledger: seq,
+                donation_count: 1,
+                refund_claimed: false,
+            },
+        );
+
+        // One more donation should bring count to 2.
         CampaignContract::donate(env.clone(), donor.clone(), 100, AssetInfo::Native);
 
         let record = get_donor(&env, &donor).expect("donor record must exist");
@@ -253,6 +272,7 @@ fn test_lifetime_cap_allows_donations_below_limit() {
 #[should_panic]
 fn test_interval_rejects_donation_within_cooldown() {
     let env = Env::default();
+    env.ledger().with_mut(|li| li.timestamp = 1000);
     env.mock_all_auths();
     with_contract(&env, || {
         init_campaign(&env, None, Some(60));
@@ -282,6 +302,7 @@ fn test_interval_rejects_donation_within_cooldown() {
 #[test]
 fn test_interval_allows_donation_after_cooldown_expires() {
     let env = Env::default();
+    env.ledger().with_mut(|li| li.timestamp = 1000);
     env.mock_all_auths();
     with_contract(&env, || {
         init_campaign(&env, None, Some(60));
@@ -314,6 +335,7 @@ fn test_interval_allows_donation_after_cooldown_expires() {
 #[test]
 fn test_interval_first_donation_always_allowed() {
     let env = Env::default();
+    env.ledger().with_mut(|li| li.timestamp = 1000);
     env.mock_all_auths();
     with_contract(&env, || {
         init_campaign(&env, None, Some(3600));
@@ -332,6 +354,7 @@ fn test_interval_first_donation_always_allowed() {
 #[should_panic]
 fn test_interval_boundary_one_second_short_rejected() {
     let env = Env::default();
+    env.ledger().with_mut(|li| li.timestamp = 1000);
     env.mock_all_auths();
     with_contract(&env, || {
         let interval: u64 = 120;
@@ -361,6 +384,7 @@ fn test_interval_boundary_one_second_short_rejected() {
 #[test]
 fn test_interval_boundary_exact_expiry_accepted() {
     let env = Env::default();
+    env.ledger().with_mut(|li| li.timestamp = 1000);
     env.mock_all_auths();
     with_contract(&env, || {
         let interval: u64 = 120;
@@ -396,6 +420,7 @@ fn test_interval_boundary_exact_expiry_accepted() {
 #[should_panic]
 fn test_combined_guards_lifetime_cap_fires_independently() {
     let env = Env::default();
+    env.ledger().with_mut(|li| li.timestamp = 1000);
     env.mock_all_auths();
     with_contract(&env, || {
         // Cap at 1 lifetime donation, 60 s cooldown.

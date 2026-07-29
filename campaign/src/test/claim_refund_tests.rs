@@ -5,11 +5,9 @@
 
 #![cfg(test)]
 
-use core::ops::Add;
-
 use soroban_sdk::testutils::{Address as AddressTestUtils, Ledger};
 use soroban_sdk::token::{StellarAssetClient, TokenClient};
-use soroban_sdk::{log, vec, Address, Env, Vec};
+use soroban_sdk::{vec, Address, Env, Vec};
 
 use super::with_contract;
 use crate::storage::{set_campaign, set_donor, set_milestone};
@@ -511,6 +509,8 @@ fn test_claim_refund_ended_donor_100() {
         &accepted_assets,
         &milestones,
         &min_donation_amount,
+        &None,
+        &None,
     );
 
     client.donate(&donor, &100, &AssetInfo::Stellar(token_address.clone()));
@@ -574,6 +574,8 @@ fn test_claim_refund_ended_donor_1() {
         &accepted_assets,
         &milestones,
         &min_donation_amount,
+        &None,
+        &None,
     );
 
     client.donate(&donor, &1, &AssetInfo::Stellar(token_address.clone()));
@@ -631,6 +633,8 @@ fn test_claim_refund_ended_full_refund() {
         &accepted_assets,
         &milestones,
         &min_donation_amount,
+        &None,
+        &None,
     );
 
     client.donate(&donor, &1500, &AssetInfo::Stellar(token_address.clone()));

@@ -79,7 +79,9 @@ fn initialize_campaign(env: &Env, creator: &Address, token: &Address, goal: i128
         assets,
         milestones,
         0,
-    None, None)
+        None,
+        None,
+    )
     .unwrap();
 }
 

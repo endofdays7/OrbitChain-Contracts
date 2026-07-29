@@ -122,6 +122,9 @@ impl CampaignContract {
     /// - `Error::InvalidMilestoneCount` if milestone count is not 1-5
     /// - `Error::InvalidMilestones`     if milestones are not sorted ascending
     /// - `Error::MilestoneMismatch`     if last milestone.target_amount != goal_amount
+    /// `#[allow(clippy::too_many_arguments)]`: this is the public contract
+    /// entrypoint and cannot be refactored without a breaking API change.
+    #[allow(clippy::too_many_arguments)]
     pub fn initialize(
         env: Env,
         creator: soroban_sdk::Address,
